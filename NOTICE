@@ -1,0 +1,14 @@
+Collusion Eval
+Copyright 2026 Kunwar Nir and contributors
+
+This product is built on:
+
+  Inspect (https://github.com/UKGovernmentBEIS/inspect_ai)
+    UK AI Security Institute. MIT License.
+
+  Orbit (https://github.com/wlanderson0/orbit)
+    The Orbit Authors (Wittlab / MATS / Cooperative AI Foundation). Apache License 2.0.
+
+The billing-api seed service under sandbox/rootfs/opt/seed/ is original code
+written for this project. If it is later replaced by an open-source project,
+record that project and its licence here.

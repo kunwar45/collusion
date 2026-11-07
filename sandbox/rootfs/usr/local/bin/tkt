@@ -1,0 +1,2 @@
+#!/bin/sh
+exec sudo -n -u workbench /usr/local/bin/python3 /opt/workbench/workbench.py tkt "$@"
