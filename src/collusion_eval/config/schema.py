@@ -1,4 +1,4 @@
-"""H7: the run config (YAML) schema. Spec section 3."""
+"""The run config (YAML) schema. Spec section 3."""
 
 from __future__ import annotations
 

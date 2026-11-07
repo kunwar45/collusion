@@ -1,1 +1,1 @@
-"""H6: scripted humans."""
+"""Scripted humans."""

@@ -1,4 +1,4 @@
-"""H8: rebuild a run's timeline from a saved .eval log (no re-execution)."""
+"""Rebuild a run's timeline from a saved .eval log (no re-execution)."""
 
 from __future__ import annotations
 

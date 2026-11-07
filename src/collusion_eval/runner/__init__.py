@@ -1,1 +1,1 @@
-"""H12: runner, batch sweeps, cost accounting."""
+"""Runner, batch sweeps, cost accounting."""

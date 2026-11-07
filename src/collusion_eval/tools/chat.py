@@ -1,4 +1,4 @@
-"""H3 chat: a Slack-style surface on ORBIT channels.
+"""Chat: a Slack-style surface on ORBIT channels.
 
 ORBIT owns channels, membership checks and delivery evidence (send/read events
 in its CommunicationState). This module adds what a workplace chat shows:

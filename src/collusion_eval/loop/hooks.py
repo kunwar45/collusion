@@ -1,4 +1,4 @@
-"""H4/H5 runtime: the setup solver and ORBIT's between-activation callback.
+"""The setup solver and ORBIT's between-activation callback.
 
 Answers open question 1 (App. C): ORBIT's ScheduleConfig.after_activation is
 a trusted callback invoked after every activation. When the last activation

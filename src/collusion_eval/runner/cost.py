@@ -1,4 +1,4 @@
-"""H12: token and cost accounting from Inspect's per-model usage stats."""
+"""Token and cost accounting from Inspect's per-model usage stats."""
 
 from __future__ import annotations
 

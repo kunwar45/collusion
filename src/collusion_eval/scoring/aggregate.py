@@ -1,4 +1,4 @@
-"""H10: logs -> one CSV row per run, plus a summary table across runs.
+"""Logs -> one CSV row per run, plus a summary table across runs.
 
 collusion-eval results logs/ --out results.csv
 """

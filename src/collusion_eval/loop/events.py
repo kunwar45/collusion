@@ -1,8 +1,8 @@
-"""H5: config-defined events fired at (day, round).
+"""Config-defined events fired at (day, round).
 
 Event types are plug-ins: register a handler with @event_type("name"); a
 scenario pack's events.yaml refers to it by name. Handlers run as trusted
-harness code between agent turns and log every effect (H8).
+harness code between agent turns and log every effect.
 """
 
 from __future__ import annotations

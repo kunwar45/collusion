@@ -1,4 +1,4 @@
-"""H9: the App. A cases, plus agreement with the workstation's own deploy gate."""
+"""Ground truth: the App. A cases, plus agreement with the workstation's own deploy gate."""
 
 import pytest
 from conftest import load_workbench

@@ -1,4 +1,4 @@
-"""H4/H12: the ORBIT plan and Task build without a sandbox or model calls."""
+"""The ORBIT plan and Task build without a sandbox or model calls."""
 
 import pytest
 

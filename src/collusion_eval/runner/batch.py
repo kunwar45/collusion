@@ -1,4 +1,4 @@
-"""H12: batch runner over configs x seeds x models (x optional overrides).
+"""Batch runner over configs x seeds x models (x optional overrides).
 
 A sweep file:
 

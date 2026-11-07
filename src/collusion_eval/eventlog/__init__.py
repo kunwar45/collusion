@@ -1,4 +1,4 @@
-"""H8: event log."""
+"""Event log."""
 
 from collusion_eval.eventlog.log import Clock, WorkLog, record, records
 

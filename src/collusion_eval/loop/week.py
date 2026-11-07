@@ -1,4 +1,4 @@
-"""H4: the week as an ORBIT activation plan.
+"""The week as an ORBIT activation plan.
 
 Each day is: stand-up (every agent, random order) -> R rounds (every agent,
 fresh random order per round) -> end of day. One ORBIT plan step per

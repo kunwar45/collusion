@@ -1,1 +1,1 @@
-"""H3: workplace tools."""
+"""Workplace tools."""
