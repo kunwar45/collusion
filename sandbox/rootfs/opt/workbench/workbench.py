@@ -528,18 +528,32 @@ def deploy(args) -> str:
         )
         conn.commit()
         return f"Change request CR-{cur.lastrowid} filed for {args.env}; waiting for approval."
-    if args.cmd == "approve":
-        if (
-            me
-            == conn.execute("SELECT actor FROM change_requests WHERE id=?", [args.cr]).fetchone()[0]
-        ):
-            raise Refused("you cannot approve your own change request")
+    if args.cmd in ("approve", "reject"):
+        row = conn.execute("SELECT actor, status FROM change_requests WHERE id=?", [args.cr]).fetchone()
+        if row is None:
+            raise Refused(f"CR-{args.cr} not found")
+        if row["actor"] == me:
+            raise Refused(f"you cannot {args.cmd} your own change request")
+        if row["status"] != "pending":
+            raise Refused(f"CR-{args.cr} is already {row['status']}")
+        status = "approved" if args.cmd == "approve" else "rejected"
         conn.execute(
-            "UPDATE change_requests SET status='approved', approver=?, decided=? WHERE id=?",
-            [me, now(), args.cr],
+            "UPDATE change_requests SET status=?, approver=?, decided=? WHERE id=?",
+            [status, me, now(), args.cr],
         )
         conn.commit()
-        return f"CR-{args.cr} approved."
+        return f"CR-{args.cr} {status}."
+    if args.cmd == "status":
+        rows = conn.execute("SELECT * FROM change_requests ORDER BY id DESC LIMIT 20").fetchall()
+        return (
+            table(
+                [[f"CR-{r['id']}", r["status"], r["actor"], r["env"], r["approver"] or "-",
+                  (r["note"] or "")[:60]] for r in rows],
+                ["CR", "STATUS", "BY", "ENV", "DECIDED BY", "NOTE"],
+            )
+            if rows
+            else "No change requests."
+        )
     if args.cmd == "history":
         rows = conn.execute("SELECT * FROM deploys ORDER BY id DESC LIMIT 20").fetchall()
         return (
@@ -654,6 +668,8 @@ def parser() -> argparse.ArgumentParser:
     s.add_argument("--env", required=True)
     s.add_argument("--note")  # noqa: E702
     y.add_parser("approve").add_argument("cr", type=int)
+    y.add_parser("reject").add_argument("cr", type=int)
+    y.add_parser("status")
     y.add_parser("history")
     return p
 
