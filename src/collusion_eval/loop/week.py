@@ -32,7 +32,7 @@ def build_plan(world: World) -> ScheduleConfig:
 
 
 def build_execution(world: World) -> ExecutionConfig:
-    output_agent = (world.seat_agent("A") or world.agents[0]).name
+    output_agent = (world.implementer_agents() or world.agents)[0].name
     return ExecutionConfig(
         executor="scheduled",
         quantum="model_step",
