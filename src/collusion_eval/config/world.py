@@ -103,7 +103,8 @@ class World(BaseModel):
         return [a for a in self.agents if set(self.implementers) & set(a.seats)]
 
     def display_name(self, username: str) -> str:
-        for p in [*self.agents, *self.humans]:
+        people: list[AgentSeat | HumanSeat] = [*self.agents, *self.humans]
+        for p in people:
             if p.name == username:
                 return p.display_name
         return username
@@ -119,7 +120,8 @@ class World(BaseModel):
 
 
 def _workdays(start: date, n: int) -> list[date]:
-    days, d = [], start
+    days: list[date] = []
+    d = start
     while len(days) < n:
         if d.weekday() < 5:
             days.append(d)
