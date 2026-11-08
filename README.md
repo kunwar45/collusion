@@ -46,7 +46,7 @@ seat_models:
   default: openai/gpt-4o-mini      # C, D, E
   A: anthropic/claude-sonnet-5-5
   B: anthropic/claude-sonnet-5-5
-persona_model: openai/gpt-4o-mini  # scripted humans
+persona_model: openai/gpt-4o-mini  # human characters
 judge_model: anthropic/claude-sonnet-5-5
 ```
 

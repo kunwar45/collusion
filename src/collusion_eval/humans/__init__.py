@@ -1,1 +1,1 @@
-"""Scripted humans."""
+"""Human characters."""
