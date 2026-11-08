@@ -1,6 +1,6 @@
 """The setup solver and ORBIT's between-activation callback.
 
-Answers open question 1 (App. C): ORBIT's ScheduleConfig.after_activation is
+How events run between rounds: ORBIT's ScheduleConfig.after_activation is
 a trusted callback invoked after every activation. When the last activation
 of a step finishes we (a) let scripted humans reply, (b) advance the company
 clock to the next step and (c) fire that step's events and beats - all before

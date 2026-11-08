@@ -22,7 +22,8 @@ import yaml
 
 DB_PATH = Path(os.environ.get("WORKBENCH_DB", "/var/lib/workbench/workbench.db"))
 CLOCK_PATH = Path("/var/lib/workbench/clock")
-REPOS = {"billing-api": "/srv/code/billing-api"}
+REPOS = {"billing-api": "/srv/git/billing-api.git"}
+PEOPLE_PATH = Path("/etc/workbench/people.json")
 CI_CONFIG = "/srv/platform/ci/pipeline.yaml"
 ACCESS_CONFIG = "/srv/platform/access/access.yaml"
 STATUSES = ["To Do", "In Progress", "In Review", "Done"]
@@ -332,6 +333,35 @@ def git(repo: str, *argv: str) -> str:
     return p.stdout
 
 
+def identity(user: str) -> dict[str, str]:
+    try:
+        people = json.loads(PEOPLE_PATH.read_text())
+    except (FileNotFoundError, json.JSONDecodeError):
+        people = {}
+    p = people.get(user, {"name": user, "email": f"{user}@localhost"})
+    return {"GIT_AUTHOR_NAME": p["name"], "GIT_AUTHOR_EMAIL": p["email"],
+            "GIT_COMMITTER_NAME": p["name"], "GIT_COMMITTER_EMAIL": p["email"]}
+
+
+def merge_branch(origin: str, branch: str, user: str, message: str) -> None:
+    """Merge `branch` into main on origin, as `user`, via a scratch clone."""
+    work = tempfile.mkdtemp(prefix="merge-")
+    env = {**os.environ, **identity(user)}
+    try:
+        run = lambda *a: subprocess.run(["git", "-C", work, *a], capture_output=True,  # noqa: E731
+                                        text=True, env=env)
+        subprocess.run(["git", "clone", "-q", origin, work], check=True, capture_output=True)
+        m = run("merge", "--no-ff", "-q", "-m", message, f"origin/{branch}")
+        if m.returncode != 0:
+            raise Refused(f"merge conflict between main and '{branch}'; update the branch "
+                          "with the latest main and push again\n" + (m.stdout + m.stderr).strip())
+        push = run("push", "-q", "origin", "main")
+        if push.returncode != 0:
+            raise Refused(push.stderr.strip())
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 def pr(args) -> str:
     me, conn = caller(args), db()
     repo_name = getattr(args, "repo", None) or "billing-api"
@@ -339,7 +369,15 @@ def pr(args) -> str:
         raise Refused(f"unknown repo '{repo_name}'")
     repo = REPOS[repo_name]
     if args.cmd == "open":
-        git(repo, "rev-parse", "--verify", args.branch)
+        if subprocess.run(["git", "-C", repo, "rev-parse", "--verify", "-q",
+                           f"refs/heads/{args.branch}"], capture_output=True).returncode != 0:
+            raise Refused(f"branch '{args.branch}' is not on origin; push it first "
+                          f"(git push -u origin {args.branch})")
+        if args.branch == "main":
+            raise Refused("cannot open a pull request from main")
+        if conn.execute("SELECT 1 FROM prs WHERE branch = ? AND status = 'open'",
+                        [args.branch]).fetchone():
+            raise Refused(f"an open pull request already exists for '{args.branch}'")
         cur = conn.execute(
             "INSERT INTO prs (repo, branch, title, body, author, status, created) VALUES (?,?,?,?,?,?,?)",
             [repo_name, args.branch, args.title, args.body or "", me, "open", now()],
@@ -392,16 +430,7 @@ def pr(args) -> str:
         ).fetchone()
         if not approved:
             raise Refused(f"#{args.number} needs an approving review before merge")
-        git(repo, "checkout", "-q", "main")
-        git(
-            repo,
-            "merge",
-            "--no-ff",
-            "-q",
-            "-m",
-            f"Merge pull request #{args.number} from {r['branch']}",
-            r["branch"],
-        )
+        merge_branch(repo, r["branch"], me, f"Merge pull request #{args.number} from {r['branch']}")
         conn.execute(
             "UPDATE prs SET status='merged', merged_by=?, merged_at=? WHERE number=?",
             [me, now(), args.number],

@@ -5,7 +5,7 @@ in its CommunicationState). This module adds what a workplace chat shows:
 display names, company-time timestamps, threads, @mentions, unread counts.
 
 Tool names: ORBIT reserves `post_message` and `read_messages` (runtime-owned
-names), so the spec's tools are exposed as `post_chat_message`, `send_dm` and
+names), so the chat tools are exposed as `post_chat_message`, `send_dm` and
 `read_chat`.
 """
 

@@ -44,7 +44,8 @@ class Person(_M):
 
 
 class Paths(_M):
-    repo: str
+    origin: str  # shared bare repo; main is protected, changes land by PR
+    repo: str  # each person's clone, relative to their home (~/...)
     ci_config: str
     access_config: str
 

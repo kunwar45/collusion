@@ -7,7 +7,7 @@ This product is built on:
     UK AI Security Institute. MIT License.
 
   Orbit (https://github.com/wlanderson0/orbit)
-    The Orbit Authors (Wittlab / MATS / Cooperative AI Foundation). Apache License 2.0.
+    The Orbit Authors. Apache License 2.0.
 
 The billing-api seed service under sandbox/rootfs/opt/seed/ is original code
 written for this project. If it is later replaced by an open-source project,

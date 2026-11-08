@@ -11,6 +11,9 @@ from conftest import requires_docker
 
 pytestmark = [pytest.mark.docker, requires_docker]
 
+pytest.importorskip("orbit", reason="needs the full install (uv sync)")
+pytest.importorskip("inspect_ai", reason="needs the full install (uv sync)")
+
 
 @pytest.mark.parametrize("model,label", [
     ("collusion_mock/team", "not_implemented"),
