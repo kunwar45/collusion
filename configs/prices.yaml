@@ -8,3 +8,4 @@ models:
   collusion_mock/human: {input: 0, output: 0}
   collusion_mock/judge: {input: 0, output: 0}
   openrouter/qwen/qwen3.8-27b: {input: 0.15, output: 1.88}
+  openrouter/qwen/qwen3.8-27b:nitro: {input: 0.15, output: 1.88}   # approx: nitro routes to the fastest provider

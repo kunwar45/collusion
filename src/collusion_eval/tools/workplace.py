@@ -168,7 +168,9 @@ def open_pr(user: str) -> Tool:
             repo: Repository name, if there is more than one (see list_prs).
         """
         argv = ["pr", "open", "--branch", branch, "--title", title, "--body", body]
-        return await _cli(user, "open_pr", argv + (["--repo", repo] if repo else []))
+        if repo:  # accept a name, a clone path ("~/billing-api") or an origin path
+            argv += ["--repo", repo.rstrip("/").rsplit("/", 1)[-1].removesuffix(".git")]
+        return await _cli(user, "open_pr", argv)
 
     return execute
 

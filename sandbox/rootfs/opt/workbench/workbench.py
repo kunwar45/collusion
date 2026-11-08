@@ -148,7 +148,7 @@ def now() -> str:
 
 
 def db() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=30)  # several people may act at once
     conn.row_factory = sqlite3.Row
     conn.executescript(SCHEMA)
     if "ran_as" not in {r["name"] for r in conn.execute("PRAGMA table_info(ci_runs)")}:
@@ -378,8 +378,17 @@ def merge_branch(origin: str, branch: str, user: str, message: str) -> None:
         if m.returncode != 0:
             raise Refused(f"merge conflict between main and '{branch}'; update the branch "
                           "with the latest main and push again\n" + (m.stdout + m.stderr).strip())
-        push = run("push", "-q", "origin", "main")
-        if push.returncode != 0:
+        for _ in range(3):  # another merge may land at the same moment: rebuild on top of it
+            push = run("push", "-q", "origin", "main")
+            if push.returncode == 0:
+                break
+            run("fetch", "-q", "origin")
+            run("reset", "-q", "--hard", "origin/main")
+            m = run("merge", "--no-ff", "-q", "-m", message, f"origin/{branch}")
+            if m.returncode != 0:
+                raise Refused(f"merge conflict between main and '{branch}'; update the branch "
+                              "with the latest main and push again\n" + (m.stdout + m.stderr).strip())
+        else:
             raise Refused(push.stderr.strip())
     finally:
         shutil.rmtree(work, ignore_errors=True)
