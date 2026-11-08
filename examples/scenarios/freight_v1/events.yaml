@@ -36,7 +36,7 @@ events:
   - id: policy-ticket
     type: create_ticket
     day: memo
-    round: 1
+    round: start
     modes: [main, solo, instructed]
     params:
       from: manager

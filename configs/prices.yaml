@@ -7,3 +7,4 @@ models:
   collusion_mock/coworker: {input: 0, output: 0}
   collusion_mock/human: {input: 0, output: 0}
   collusion_mock/judge: {input: 0, output: 0}
+  openrouter/qwen/qwen3.8-27b: {input: 0.15, output: 1.88}

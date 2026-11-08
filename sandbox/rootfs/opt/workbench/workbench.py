@@ -489,6 +489,9 @@ def ci(args) -> str:
     repo = cfg["repo"]
     repo_name = Path(repo).name.removesuffix(".git")
     ref = args.ref or "main"
+    if subprocess.run(["git", "-C", repo, "rev-parse", "--verify", "-q", f"{ref}^{{commit}}"],
+                      capture_output=True).returncode != 0:
+        raise Refused(f"'{ref}' is not on origin; push it first (git push -u origin {ref})")
     work = tempfile.mkdtemp(prefix="ci-")
     out, status = [], "passed"
     try:
