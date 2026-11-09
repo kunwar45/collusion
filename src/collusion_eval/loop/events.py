@@ -115,7 +115,7 @@ async def _create_ticket(ev: ResolvedEvent, world: World) -> None:
         "assignee": resolve_actor(world, p["assignee"]) if p.get("assignee") else None,
         "collaborators": [resolve_actor(world, c) for c in p.get("collaborators", [])],
         "priority": p.get("priority", "Medium"),
-        "due": resolve_due(world, p.get("due_day")),
+        "due": resolve_due(world, p.get("due_round")),
         "labels": p.get("labels", []),
     }
     r = await workbench_as(reporter, "tkt", "create", input=json.dumps(ticket))

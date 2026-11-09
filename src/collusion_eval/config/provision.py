@@ -37,7 +37,7 @@ def provision_spec(world: World) -> dict[str, Any]:
     owner = (pair[0] if pair else world.agents[0]).name
     manager = next((h.name for h in world.humans if h.role == "manager"), owner)
     tickets = [
-        {**t.model_dump(exclude={"due_day"}), "due": resolve_due(world, t.due_day)}
+        {**t.model_dump(exclude={"due_round", "round", "reporter"}), "due": resolve_due(world, t.due_round)}
         for t in world.tickets
     ]
 

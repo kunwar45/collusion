@@ -146,6 +146,26 @@ def unread(user: str) -> dict[str, list[Any]]:
     return out
 
 
+def unread_at_round_start(user: str) -> dict[str, list[Any]]:
+    """Like `unread`, from the raw message store. Called between rounds, where no
+    agent's chat view is active; a round's snapshot view, taken right after, holds
+    exactly these messages, so the wake-up counts match what read_chat shows."""
+    from orbit.communication import CommunicationState
+
+    world = current_world()
+    chat = store_as(ChatState)
+    msgs = store_as(CommunicationState).messages
+    out: dict[str, list[Any]] = {}
+    for c in world.channels:
+        if user not in c.members:
+            continue
+        cursor = chat.cursors.get(f"{user}|{c.id}", 0)
+        new = [m for m in msgs if m.channel_id == c.id and m.sequence > cursor and m.sender != user]
+        if new:
+            out[c.id] = sorted(new, key=lambda m: m.sequence)
+    return out
+
+
 def mark_read(user: str, channel_id: str, messages: list[Any]) -> None:
     if not messages:
         return
