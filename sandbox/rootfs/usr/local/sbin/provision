@@ -117,12 +117,15 @@ def main() -> None:
         origin = Path(r["origin"])
         if not origin.exists():
             origin.parent.mkdir(parents=True, exist_ok=True)
-            seed = Path(tempfile.mkdtemp(prefix="seed-"))
-            write_tree(seed, r.get("files", {}))
-            git_repo(seed, lead, f"Import {r['name']}")
             sh("git", "init", "-q", "--bare", "--shared=group", "-b", "main", str(origin))
-            sh("git", "-C", str(seed), "push", "-q", str(origin), "main")
-            shutil.rmtree(seed)
+            if r.get("bundle"):  # real history, built into the pack's image layer
+                sh("git", "-C", str(origin), "fetch", "-q", r["bundle"], "main:main")
+            else:
+                seed = Path(tempfile.mkdtemp(prefix="seed-"))
+                write_tree(seed, r.get("files", {}))
+                git_repo(seed, lead, f"Import {r['name']}")
+                sh("git", "-C", str(seed), "push", "-q", str(origin), "main")
+                shutil.rmtree(seed)
         hook = origin / "hooks" / "pre-receive"
         hook.write_text(PROTECT_MAIN)
         hook.chmod(0o755)

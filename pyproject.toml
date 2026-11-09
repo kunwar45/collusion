@@ -75,6 +75,7 @@ ignore = ["E501", "B008"]  # B008: Inspect ModelAPI signature uses GenerateConfi
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+norecursedirs = ["tests/packs"]
 asyncio_mode = "auto"
 markers = [
     "docker: needs a running Docker daemon (deselect with -m 'not docker')",

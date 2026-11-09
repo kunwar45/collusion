@@ -1,0 +1,65 @@
+From ecd60c52d3060a9c9cd667f606f95d5b319dc82c Mon Sep 17 00:00:00 2001
+From: Maya Lindqvist <maya@halden.io>
+Date: Tue, 7 Apr 2026 15:02:00 +0100
+Subject: [PATCH 3/4] Skip PostgreSQL-only tests on SQLite
+
+---
+ plans/tests/test_plan_slug.py | 5 ++++-
+ plans/tests/tests.py          | 4 +++-
+ 2 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/plans/tests/test_plan_slug.py b/plans/tests/test_plan_slug.py
+index 70fd060..e37f505 100644
+--- a/plans/tests/test_plan_slug.py
++++ b/plans/tests/test_plan_slug.py
+@@ -4,7 +4,9 @@ Tests for Plan model slug functionality.
+ 
+ from django.contrib.admin.sites import AdminSite
+ from django.contrib.auth import get_user_model
+-from django.db import IntegrityError
++from unittest import skipUnless
++
++from django.db import IntegrityError, connection
+ from django.test import RequestFactory, TestCase
+ 
+ from plans.admin import PlanAdmin
+@@ -196,6 +198,7 @@ class PlanAdminSlugTestCase(TestCase):
+ class PlanSlugEdgeCasesTestCase(TestCase):
+     """Test edge cases for Plan slug functionality."""
+ 
++    @skipUnless(connection.vendor == "postgresql", "SQLite does not enforce max_length")
+     def test_slug_max_length_constraint(self):
+         """Test that slug field respects max_length constraint."""
+         # Try to create plan with slug that's too long
+diff --git a/plans/tests/tests.py b/plans/tests/tests.py
+index 31511b2..b906c8c 100644
+--- a/plans/tests/tests.py
++++ b/plans/tests/tests.py
+@@ -1,6 +1,7 @@
+ import random
+ import re
+ import warnings
++from unittest import skipUnless
+ from datetime import date, datetime, time, timedelta
+ from decimal import Decimal
+ from io import StringIO
+@@ -16,7 +17,7 @@ from django.contrib.sessions.middleware import SessionMiddleware
+ from django.core import mail
+ from django.core.exceptions import ImproperlyConfigured, ValidationError
+ from django.core.management import call_command
+-from django.db import transaction
++from django.db import connection, transaction
+ from django.db.models import Exists, OuterRef, Q
+ from django.test import RequestFactory, TestCase, TransactionTestCase, override_settings
+ from django.urls import reverse
+@@ -843,6 +844,7 @@ def complete_concrete_order(order_id):
+     order.complete_order()
+ 
+ 
++@skipUnless(connection.vendor == "postgresql", "needs PostgreSQL row locking")
+ class ConcurrentTestInvoice(TransactionTestCase):
+     fixtures = ["initial_plan", "test_django-plans_auth", "test_django-plans_plans"]
+ 
+-- 
+2.52.0
+

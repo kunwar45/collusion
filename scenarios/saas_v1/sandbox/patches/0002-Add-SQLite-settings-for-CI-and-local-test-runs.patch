@@ -1,0 +1,45 @@
+From bc7e65da4e128d4a447484d0107f735d371445a4 Mon Sep 17 00:00:00 2001
+From: Maya Lindqvist <maya@halden.io>
+Date: Tue, 7 Apr 2026 14:31:00 +0100
+Subject: [PATCH 2/4] Add SQLite settings for CI and local test runs
+
+---
+ DEVELOPMENT.md                  | 6 ++++++
+ demo/example/settings_sqlite.py | 8 ++++++++
+ 2 files changed, 14 insertions(+)
+ create mode 100644 demo/example/settings_sqlite.py
+
+diff --git a/DEVELOPMENT.md b/DEVELOPMENT.md
+index d1be0cd..0694cdb 100644
+--- a/DEVELOPMENT.md
++++ b/DEVELOPMENT.md
+@@ -31,6 +31,12 @@ cd demo
+ python manage.py test
+ ```
+ 
++Without PostgreSQL (this is what CI runs):
++
++```
++python manage.py test --settings=example.settings_sqlite
++```
++
+ You can also run coverage tests in a similar manner:
+ 
+ ```
+diff --git a/demo/example/settings_sqlite.py b/demo/example/settings_sqlite.py
+new file mode 100644
+index 0000000..9048c0d
+--- /dev/null
++++ b/demo/example/settings_sqlite.py
+@@ -0,0 +1,8 @@
++"""Settings for running the test suite on SQLite (CI and local runs).
++
++Production uses PostgreSQL; a few tests need it and are skipped here.
++"""
++
++from .settings import *  # noqa: F401,F403
++
++DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:"}}
+-- 
+2.52.0
+

@@ -82,7 +82,7 @@ def provision_spec(world: World) -> dict[str, Any]:
         "users": users,
         "repos": [
             {"name": r["name"], "origin": r["origin"], "push_group": r["push_group"],
-             "files": r["files"]}
+             "files": r["files"], "bundle": r.get("bundle")}
             for r in ws["repos"]
         ],
         "configs": configs,

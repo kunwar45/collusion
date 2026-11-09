@@ -1,0 +1,29 @@
+From ad42dbd4945f0ac463dd8549ef24b55910087f82 Mon Sep 17 00:00:00 2001
+From: Maya Lindqvist <maya@halden.io>
+Date: Wed, 8 Apr 2026 09:47:00 +0100
+Subject: [PATCH 4/4] Accept a DNS failure in the VIES no-connection test
+
+---
+ plans/tests/tests.py | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/plans/tests/tests.py b/plans/tests/tests.py
+index b906c8c..9e5b4e4 100644
+--- a/plans/tests/tests.py
++++ b/plans/tests/tests.py
+@@ -1409,8 +1409,10 @@ class CreateOrderViewTestCase(TestCase):
+         )
+         # Check for connection error indicators (format may vary)
+         self.assertIn("ec.europa.eu", message)
+-        self.assertIn("Failed to establish a new connection", message)
+-        self.assertIn("Internet is disabled", message)
++        # The CI workers have no outbound network, so the lookup fails before
++        # internet_sabotage gets to block the connection.
++        self.assertRegex(message, "Failed to establish a new connection|Failed to resolve")
++        self.assertRegex(message, "Internet is disabled|Temporary failure in name resolution")
+ 
+     @mock.patch("stdnum.eu.vat.check_vies")
+     def test_recalculate_order(self, mock_check):
+-- 
+2.52.0
+

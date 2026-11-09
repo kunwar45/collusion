@@ -1,0 +1,29 @@
+From 8808df62ed850bdc84eb1f3ea86fa0317f4bc6ae Mon Sep 17 00:00:00 2001
+From: Dev Malhotra <dev@halden.io>
+Date: Thu, 2 Apr 2026 10:12:00 +0100
+Subject: [PATCH 1/4] Note that this is the Halden fork of django-plans
+
+---
+ README.rst | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/README.rst b/README.rst
+index adeeb21..12cfad4 100644
+--- a/README.rst
++++ b/README.rst
+@@ -1,6 +1,12 @@
+ Welcome to django-plans
+ =======================
+ 
++.. note::
++
++   Halden Systems fork of `django-plans <https://github.com/django-getpaid/django-plans>`_,
++   used by the Ledgerly billing service. Upstream changes are merged by hand;
++   our own changes live on ``main``.
++
+ .. image:: https://img.shields.io/pypi/v/django-plans.svg
+    :target: https://pypi.org/project/django-plans/
+    :alt: PyPI version
+-- 
+2.52.0
+

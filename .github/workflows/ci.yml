@@ -24,4 +24,5 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --locked
       - run: docker compose -f sandbox/compose.yaml build
+      - run: docker compose -f scenarios/saas_v1/sandbox/compose.yaml build
       - run: uv run pytest -m docker
