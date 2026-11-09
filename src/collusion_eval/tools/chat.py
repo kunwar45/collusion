@@ -33,6 +33,7 @@ MENTION = re.compile(r"@([a-z][a-z0-9_-]*)", re.IGNORECASE)
 class ChatState(StoreModel):
     meta: dict[str, dict[str, Any]] = Field(default_factory=dict)  # orbit message id -> meta
     cursors: dict[str, int] = Field(default_factory=dict)  # "user|channel" -> last read seq
+    read_ids: dict[str, list[str]] = Field(default_factory=dict)  # reads ahead of the cursor
 
 
 # ------------------------------------------------------------------ helpers
@@ -171,8 +172,10 @@ def unread(user: str) -> dict[str, list[Any]]:
         if user not in c.members:
             continue
         cursor = chat.cursors.get(f"{user}|{c.id}", 0)
+        seen = set(chat.read_ids.get(f"{user}|{c.id}", []))
         new = [
-            m for m in orbit_read(c.id, agent_id=user) if m.sequence > cursor and m.sender != user
+            m for m in orbit_read(c.id, agent_id=user)
+            if m.sequence > cursor and m.sender != user and m.id not in seen
         ]
         if new:
             out[c.id] = new
@@ -193,7 +196,9 @@ def unread_at_round_start(user: str) -> dict[str, list[Any]]:
         if user not in c.members:
             continue
         cursor = chat.cursors.get(f"{user}|{c.id}", 0)
-        new = [m for m in msgs if m.channel_id == c.id and m.sequence > cursor and m.sender != user]
+        seen = set(chat.read_ids.get(f"{user}|{c.id}", []))
+        new = [m for m in msgs if m.channel_id == c.id and m.sequence > cursor
+               and m.sender != user and m.id not in seen]
         if new:
             out[c.id] = sorted(new, key=lambda m: m.sequence)
     return out
@@ -205,10 +210,17 @@ def mark_read(user: str, channel_id: str, messages: list[Any]) -> None:
     record_read(channel_id, agent_id=user, rendered_messages={m.id: render(m) for m in messages})
     chat = store_as(ChatState)
     key = f"{user}|{channel_id}"
-    chat.cursors = {
-        **chat.cursors,
-        key: max(chat.cursors.get(key, 0), *(m.sequence for m in messages)),
-    }
+    cursor = chat.cursors.get(key, 0)
+    seen = set(chat.read_ids.get(key, [])) | {m.id for m in messages if m.sequence > cursor}
+    for m in orbit_read(channel_id, agent_id=user):
+        if m.sequence <= cursor or m.sender == user:
+            continue
+        if m.id not in seen:
+            break
+        cursor = m.sequence
+        seen.discard(m.id)
+    chat.cursors = {**chat.cursors, key: cursor}
+    chat.read_ids = {**chat.read_ids, key: sorted(seen)}
 
 
 def full_thread_id(prefix: str | None) -> str | None:
@@ -287,8 +299,9 @@ def read_chat(user: str) -> Tool:
         )
         msgs = orbit_read(cid, agent_id=user)
         if not include_read:
-            cursor = store_as(ChatState).cursors.get(f"{user}|{cid}", 0)
-            msgs = [m for m in msgs if m.sequence > cursor][-30:]
+            # Return the oldest unread page. Taking the tail and advancing the
+            # cursor to it silently discarded earlier unread messages.
+            msgs = unread(user).get(cid, [])[:30]
         else:
             msgs = msgs[-30:]
         mark_read(user, cid, [m for m in msgs if m.sender != user])
