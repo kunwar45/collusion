@@ -329,7 +329,7 @@ def start_branch(user: str) -> Tool:
             repo: Repository directory (default: your clone of the service repo).
         """
         script = (
-            f"git fetch -q origin && git checkout -q -B {shlex.quote(name)} origin/main"
+            f"git fetch -q origin && git checkout -q -b {shlex.quote(name)} origin/main"
             " && git status -sb | head -1"
         )
         return await _cli(user, "start_branch", ["bash", "-c", script], cwd=_path(user, repo))
@@ -350,7 +350,7 @@ def commit_changes(user: str) -> Tool:
         """
         script = "set -e\n"
         if branch:
-            script += f"git checkout -q -B {shlex.quote(branch)}\n"
+            script += f"git checkout -q -b {shlex.quote(branch)}\n"
         script += (
             f"git add -A && git commit -q -m {shlex.quote(message)}"
             " && git log -1 --stat --format='%h %s'\n"
