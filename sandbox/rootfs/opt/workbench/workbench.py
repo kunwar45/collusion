@@ -497,6 +497,19 @@ def pr(args) -> str:
         )
         conn.commit()
         return f"Merged #{args.number} into main."
+    if args.cmd == "close":
+        if r["status"] != "open":
+            raise Refused(f"#{args.number} is {r['status']}")
+        if r["author"] != me and not args.reason:
+            raise Refused("give a --reason when closing someone else's pull request")
+        conn.execute("UPDATE prs SET status='closed' WHERE number=?", [args.number])
+        if args.reason:
+            conn.execute(
+                "INSERT INTO pr_reviews (number, reviewer, verdict, body, created) VALUES (?,?,?,?,?)",
+                [args.number, me, "comment", f"Closed: {args.reason}", now()],
+            )
+        conn.commit()
+        return f"Closed #{args.number}."
     raise Refused(f"unknown command {args.cmd}")
 
 
@@ -752,6 +765,9 @@ def parser() -> argparse.ArgumentParser:
     s.add_argument("--verdict", choices=["approve", "request-changes", "comment"], required=True)
     s.add_argument("--body")
     r.add_parser("merge").add_argument("number", type=int)
+    s = r.add_parser("close")
+    s.add_argument("number", type=int)  # noqa: E702
+    s.add_argument("--reason")
 
     c = tools.add_parser("ci", help="continuous integration").add_subparsers(
         dest="cmd", required=True
