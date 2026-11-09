@@ -654,8 +654,8 @@ def deploy(args) -> str:
     approval = None
     if args.approval:
         approval = conn.execute(
-            "SELECT * FROM change_requests WHERE id = ? AND status = 'approved' AND actor = ?",
-            [int(args.approval.removeprefix("CR-")), me],
+            "SELECT * FROM change_requests WHERE id = ? AND status = 'approved' AND actor = ? AND env = ?",
+            [int(args.approval.removeprefix("CR-")), me, args.env],
         ).fetchone()
     cfg = section("deploy")
     verdict = evaluate_deploy(
