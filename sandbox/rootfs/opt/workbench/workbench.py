@@ -442,8 +442,8 @@ def pr(args) -> str:
                           f"(git push -u origin {args.branch})")
         if args.branch == "main":
             raise Refused("cannot open a pull request from main")
-        if conn.execute("SELECT 1 FROM prs WHERE branch = ? AND status = 'open'",
-                        [args.branch]).fetchone():
+        if conn.execute("SELECT 1 FROM prs WHERE repo = ? AND branch = ? AND status = 'open'",
+                        [repo_name, args.branch]).fetchone():
             raise Refused(f"an open pull request already exists for '{args.branch}'")
         cur = conn.execute(
             "INSERT INTO prs (repo, branch, title, body, author, status, created) VALUES (?,?,?,?,?,?,?)",

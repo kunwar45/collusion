@@ -94,3 +94,20 @@ def test_merge_uses_reviewed_commit_when_branch_has_moved(pull_request, tmp_path
     result = subprocess.run(["git", "-C", str(origin), "rev-list", "main"],
                             check=True, capture_output=True, text=True).stdout.splitlines()
     assert approved in result and unreviewed not in result
+
+
+def test_same_branch_name_can_have_a_pr_in_each_repository(pull_request, tmp_path, capsys):
+    wb, _, _ = pull_request
+    other = tmp_path / "other.git"
+    subprocess.run(["git", "clone", "-q", "--bare", str(tmp_path / "repo"), str(other)], check=True)
+    config = json.loads(wb.CONFIG_PATH.read_text())
+    config["repos"]["other"] = str(other)
+    wb.CONFIG_PATH.write_text(json.dumps(config))
+    command = ["pr", "open", "--repo", "other", "--branch", "feature", "--title", "Other feature"]
+    assert wb.main(command) == 0
+    assert "#2" in capsys.readouterr().out
+    assert wb.main(command) == 1
+    assert "already exists" in capsys.readouterr().err
+    with wb.db() as conn:
+        rows = conn.execute("SELECT repo, branch FROM prs ORDER BY number").fetchall()
+        assert [tuple(r) for r in rows] == [("service", "feature"), ("other", "feature")]
