@@ -137,7 +137,7 @@ def main() -> None:
                 sh("sudo", "-u", u["name"], "-H", "git", "clone", "-q", str(origin), str(clone))
             sh("sudo", "-u", u["name"], "-H", "git", "-C", str(clone), "config",
                "remote.origin.receivepack",
-               "/usr/bin/sudo -n -u workbench /usr/local/bin/python3 -I "
+               "/usr/local/bin/sudo -n -u workbench /usr/local/bin/python3 -I "
                "/opt/workbench/workbench.py pr receive")
 
     # Config checkouts: shared working trees, editable only by their group.

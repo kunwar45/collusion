@@ -4,6 +4,12 @@ All notable changes are recorded here. Versions follow [semver](https://semver.o
 
 ## [Unreleased]
 
+### Fixed (Linux CI)
+- A workstation `sudo` wrapper clears inherited libfaketime shared-memory
+  handles, avoiding cross-user permission failures in the workbench CLIs and
+  Git pushes on hardened Linux runners while preserving company time. A Docker
+  regression exercises all five CLIs without the filesystem override capability.
+
 ### Fixed (workplace tools, H3)
 - Chat reads preserve all unread messages across pages and recent-history views.
   Threads resolve only within the visible conversation and support explicit

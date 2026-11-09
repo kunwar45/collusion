@@ -1,0 +1,5 @@
+#!/bin/sh
+# Keep per-user clock shared memory out of the setuid sudo process.
+# Every process still reads the shared clock offset from /etc/faketimerc.
+unset FAKETIME_SHARED
+exec /usr/bin/sudo "$@"

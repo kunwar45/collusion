@@ -7,6 +7,8 @@ agents' tool calls reach it.
 
 from __future__ import annotations
 
+import subprocess
+
 import pytest
 from conftest import TOY_SMOKE, requires_docker, workstation
 
@@ -17,6 +19,41 @@ pytestmark = [pytest.mark.docker, requires_docker]
 def box():
     with workstation(TOY_SMOKE) as b:
         yield b
+
+
+def test_workbench_clis_without_filesystem_override():
+    """A setuid sudo must not open its caller's libfaketime shared memory.
+
+    Dropping DAC_OVERRIDE exposes the cross-user access on Docker Desktop too;
+    Linux runners with fs.protected_regular=2 reject the inherited shm_open.
+    """
+    container = subprocess.check_output(
+        ["docker", "run", "-d", "--rm", "--init", "--network", "none",
+         "--cap-drop", "DAC_OVERRIDE", "eng-workstation:0.1.0"], text=True,
+    ).strip()
+    try:
+        subprocess.run(
+            ["docker", "exec", container, "useradd", "--create-home", "--groups", "staff", "clock-user"],
+            check=True, capture_output=True, text=True,
+        )
+        for command in ("tkt", "dr", "pr", "ci", "deploy"):
+            result = subprocess.run(
+                ["docker", "exec", "-u", "clock-user", container, command, "--help"],
+                capture_output=True, text=True, timeout=30,
+            )
+            assert result.returncode == 0, f"{command}: {result.stdout}{result.stderr}"
+            assert f"usage: workbench {command}" in result.stdout
+        # Git's receive command and explicit controller calls use the same boundary.
+        result = subprocess.run(
+            ["docker", "exec", "-u", "clock-user", container, "/usr/local/bin/sudo",
+             "-n", "-u", "workbench", "/usr/local/bin/python3", "-I",
+             "/opt/workbench/workbench.py", "--help"],
+            capture_output=True, text=True, timeout=30,
+        )
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert "usage: workbench" in result.stdout
+    finally:
+        subprocess.run(["docker", "rm", "-f", container], check=True, capture_output=True)
 
 
 JPY_FIX = r"""
